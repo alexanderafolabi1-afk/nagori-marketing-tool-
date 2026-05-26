@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nagori • Image Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .preview-text {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .square-preview {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+    </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen">
+    <div class="max-w-7xl mx-auto px-8 py-12">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-16">
+            <div>
+                <h1 class="text-4xl tracking-tighter font-light">NAGORI</h1>
+                <p class="text-zinc-500 text-sm tracking-[2px] mt-1">IMAGE CREATOR</p>
+            </div>
+            <div class="text-right">
+                <p class="text-emerald-400 text-xs tracking-widest">STEP 01 • TEXT GRAPHICS</p>
+            </div>
+        </div>
+
+        <div class="flex gap-16">
+            <!-- Controls -->
+            <div class="w-96 flex-shrink-0">
+                <div class="mb-8">
+                    <label class="block text-zinc-400 text-sm tracking-widest mb-3">YOUR TEXT</label>
+                    <textarea 
+                        id="textInput" 
+                        rows="6"
+                        class="w-full bg-zinc-900 border border-zinc-700 focus:border-white/30 rounded-2xl px-6 py-5 text-lg resize-none focus:outline-none text-white placeholder-zinc-500"
+                        placeholder="Type your message here..."></textarea>
+                </div>
+
+                <button 
+                    id="downloadBtn"
+                    class="w-full bg-white text-black hover:bg-white/90 transition-colors font-medium py-6 rounded-2xl text-lg tracking-wider flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v-4m0 0l4 4m-4-4l4-4m12 4v4m0-4l-4 4m4-4l-4-4" />
+                    </svg>
+                    DOWNLOAD IMAGE
+                </button>
+
+                <div class="mt-12 text-xs text-zinc-500 leading-relaxed">
+                    <p class="mb-2">• Text appears live in preview</p>
+                    <p>• Square 1:1 format ideal for Instagram, Pinterest &amp; more</p>
+                    <p class="mt-6 text-emerald-300">Quiet luxury design system • Nagori.xyz</p>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="flex-1 flex items-center justify-center">
+                <div id="preview" 
+                     class="square-preview w-[420px] h-[420px] bg-[#1a1a1a] rounded-3xl overflow-hidden relative flex items-center justify-center border border-zinc-800">
+                    
+                    <!-- Content -->
+                    <div class="text-center px-12">
+                        <div id="previewText" 
+                             class="preview-text text-4xl leading-tight text-white tracking-[-1px]">
+                            Your message appears here
+                        </div>
+                    </div>
+
+                    <!-- Watermark -->
+                    <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+                        <div class="flex items-center gap-2 text-[10px] tracking-[3px] text-zinc-500 font-light">
+                            <div class="w-6 h-px bg-zinc-700"></div>
+                            NAGORI
+                            <div class="w-6 h-px bg-zinc-700"></div>
+                        </div>
+                    </div>
+
+                    <!-- Subtle border accent -->
+                    <div class="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script already loaded via CDN
+        
+        const textInput = document.getElementById('textInput');
+        const previewText = document.getElementById('previewText');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const preview = document.getElementById('preview');
+
+        // Live update
+        textInput.addEventListener('input', () => {
+            const text = textInput.value.trim();
+            if (text === '') {
+                previewText.textContent = 'Your message appears here';
+            } else {
+                previewText.textContent = text;
+            }
+        });
+
+        // Download functionality
+        downloadBtn.addEventListener('click', () => {
+            downloadBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                GENERATING...
+            `;
+            downloadBtn.disabled = true;
+
+            html2canvas(preview, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#1a1a1a'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `nagori-${new Date().toISOString().slice(0,10)}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Reset button
+                setTimeout(() => {
+                    downloadBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v-4m0 0l4 4m-4-4l4-4m12 4v4m0-4l-4 4m4-4l-4-4" />
+                        </svg>
+                        DOWNLOAD IMAGE
+                    `;
+                    downloadBtn.disabled = false;
+                }, 800);
+            }).catch(err => {
+                console.error(err);
+                alert("Failed to generate image. Please try again.");
+                downloadBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v-4m0 0l4 4m-4-4l4-4m12 4v4m0-4l-4 4m4-4l-4-4" />
+                    </svg>
+                    DOWNLOAD IMAGE
+                `;
+                downloadBtn.disabled = false;
+            });
+        });
+
+        // Initial text
+        setTimeout(() => {
+            textInput.value = "The quiet pursuit of excellence";
+            previewText.textContent = "The quiet pursuit of excellence";
+        }, 600);
+    </script>
+</body>
+</html>
