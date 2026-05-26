@@ -58,6 +58,17 @@
                     </div>
                 </div>
 
+                <!-- Generate Button -->
+                <div class="mb-4">
+                    <button id="generateBtn"
+                            class="w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500 transition-all py-4 rounded-2xl text-sm tracking-widest flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894L18 21H6l-2.236-8.106A2 2 0 015.236 10H10" />
+                        </svg>
+                        GENERATE HIGH-CONVERSION TEXT
+                    </button>
+                </div>
+
                 <div class="mb-8">
                     <label class="block text-zinc-400 text-sm tracking-widest mb-3">YOUR TEXT</label>
                     <textarea 
@@ -120,8 +131,31 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const nagoriBtn = document.getElementById('nagoriBtn');
         const setpostgoBtn = document.getElementById('setpostgoBtn');
+        const generateBtn = document.getElementById('generateBtn');
 
         let currentBrand = 'nagori';
+
+        // Nagori Philosophical Texts
+        const nagoriTexts = [
+            "Digital noise fades. True legacy requires a permanent archive.",
+            "What is written on water disappears. What is archived stays forever.",
+            "In the age of fleeting attention, permanence is the ultimate luxury.",
+            "Time erases the ordinary. Only the carefully preserved endures.",
+            "Build not for the moment, but for the centuries that follow.",
+            "Your story deserves more than temporary pixels.",
+            "Legacy is not left by chance — it is deliberately preserved."
+        ];
+
+        // Setpostgo Growth Texts
+        const setpostgoTexts = [
+            "The 3-second hook rule: If you don't stop the scroll immediately, your content doesn't exist.",
+            "Stop posting manually. The top 1% of creators automate their distribution channels.",
+            "Post once. Reach everywhere. This is how the new elite build empires.",
+            "Your content is worthless if no one sees it. Distribution is the real game.",
+            "Consistency beats talent when systems do the heavy lifting.",
+            "Automate the boring. Dominate the feed.",
+            "Most creators post. Winners engineer visibility."
+        ];
 
         function switchBrand(brand) {
             currentBrand = brand;
@@ -147,9 +181,21 @@
             }
         }
 
+        function generateText() {
+            let texts = currentBrand === 'nagori' ? nagoriTexts : setpostgoTexts;
+            const randomIndex = Math.floor(Math.random() * texts.length);
+            const selectedText = texts[randomIndex];
+            
+            textInput.value = selectedText;
+            previewText.textContent = selectedText;
+        }
+
         // Brand button listeners
         nagoriBtn.addEventListener('click', () => switchBrand('nagori'));
         setpostgoBtn.addEventListener('click', () => switchBrand('setpostgo'));
+
+        // Generate button
+        generateBtn.addEventListener('click', generateText);
 
         // Live text update
         textInput.addEventListener('input', () => {
@@ -200,7 +246,7 @@
             });
         });
 
-        // Initialize with sample text
+        // Initialize
         window.onload = () => {
             textInput.value = "The quiet pursuit of excellence";
             previewText.textContent = "The quiet pursuit of excellence";
