@@ -3,41 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nagori • Image Creator</title>
+    <title>Nagori • Setpostgo • Image Creator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
         
         body {
             font-family: 'Inter', system_ui, sans-serif;
         }
         
-        .preview-text {
+        .nagori-text {
             font-family: 'Playfair Display', serif;
         }
         
+        .setpostgo-text {
+            font-family: 'Inter', system_ui, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+        
         .square-preview {
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
 <body class="bg-[#121212] text-white min-h-screen">
     <div class="max-w-7xl mx-auto px-8 py-12">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-16">
+        <div class="flex justify-between items-center mb-12">
             <div>
-                <h1 class="text-4xl tracking-tighter font-light">NAGORI</h1>
-                <p class="text-zinc-500 text-sm tracking-[2px] mt-1">IMAGE CREATOR</p>
+                <h1 class="text-4xl tracking-tighter font-light">CREATOR STUDIO</h1>
+                <p class="text-zinc-500 text-sm tracking-widest">DUAL BRAND ASSETS</p>
             </div>
-            <div class="text-right">
-                <p class="text-emerald-400 text-xs tracking-widest">STEP 01 • TEXT GRAPHICS</p>
-            </div>
+            <div class="text-emerald-400 text-xs tracking-[2px]">STEP 01 • TEXT GRAPHICS</div>
         </div>
 
         <div class="flex gap-16">
             <!-- Controls -->
             <div class="w-96 flex-shrink-0">
+                <!-- Brand Toggle -->
+                <div class="mb-10">
+                    <label class="block text-zinc-400 text-sm tracking-widest mb-3">BRAND</label>
+                    <div class="flex bg-zinc-900 rounded-2xl p-1 w-fit">
+                        <button id="nagoriBtn"
+                                class="brand-btn active px-8 py-3 rounded-xl text-sm font-medium transition-all">
+                            NAGORI
+                        </button>
+                        <button id="setpostgoBtn"
+                                class="brand-btn px-8 py-3 rounded-xl text-sm font-medium transition-all">
+                            SETPOSTGO
+                        </button>
+                    </div>
+                </div>
+
                 <div class="mb-8">
                     <label class="block text-zinc-400 text-sm tracking-widest mb-3">YOUR TEXT</label>
                     <textarea 
@@ -57,30 +77,30 @@
                 </button>
 
                 <div class="mt-12 text-xs text-zinc-500 leading-relaxed">
-                    <p class="mb-2">• Text appears live in preview</p>
-                    <p>• Square 1:1 format ideal for Instagram, Pinterest &amp; more</p>
-                    <p class="mt-6 text-emerald-300">Quiet luxury design system • Nagori.xyz</p>
+                    <p class="mb-1">• Live preview updates instantly</p>
+                    <p class="mb-1">• 1:1 square format</p>
+                    <p>• Perfect for social media &amp; marketing</p>
                 </div>
             </div>
 
             <!-- Preview -->
             <div class="flex-1 flex items-center justify-center">
                 <div id="preview" 
-                     class="square-preview w-[420px] h-[420px] bg-[#1a1a1a] rounded-3xl overflow-hidden relative flex items-center justify-center border border-zinc-800">
+                     class="square-preview w-[440px] h-[440px] bg-[#121212] rounded-3xl overflow-hidden relative flex items-center justify-center border border-zinc-800">
                     
                     <!-- Content -->
-                    <div class="text-center px-12">
+                    <div class="text-center px-12 max-w-[85%]">
                         <div id="previewText" 
-                             class="preview-text text-4xl leading-tight text-white tracking-[-1px]">
-                            Your message appears here
+                             class="nagori-text text-4xl leading-tight text-white tracking-[-1px]">
+                            The quiet pursuit of excellence
                         </div>
                     </div>
 
                     <!-- Watermark -->
-                    <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+                    <div id="watermark" class="absolute bottom-8 left-1/2 -translate-x-1/2">
                         <div class="flex items-center gap-2 text-[10px] tracking-[3px] text-zinc-500 font-light">
                             <div class="w-6 h-px bg-zinc-700"></div>
-                            NAGORI
+                            <span id="watermarkText">NAGORI</span>
                             <div class="w-6 h-px bg-zinc-700"></div>
                         </div>
                     </div>
@@ -93,21 +113,48 @@
     </div>
 
     <script>
-        // Tailwind script already loaded via CDN
-        
         const textInput = document.getElementById('textInput');
         const previewText = document.getElementById('previewText');
-        const downloadBtn = document.getElementById('downloadBtn');
         const preview = document.getElementById('preview');
+        const watermarkText = document.getElementById('watermarkText');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const nagoriBtn = document.getElementById('nagoriBtn');
+        const setpostgoBtn = document.getElementById('setpostgoBtn');
 
-        // Live update
+        let currentBrand = 'nagori';
+
+        function switchBrand(brand) {
+            currentBrand = brand;
+            
+            if (brand === 'nagori') {
+                nagoriBtn.classList.add('active', 'bg-white', 'text-black');
+                setpostgoBtn.classList.remove('active', 'bg-white', 'text-black');
+                
+                preview.style.backgroundColor = '#121212';
+                previewText.classList.remove('setpostgo-text');
+                previewText.classList.add('nagori-text');
+                watermarkText.textContent = 'NAGORI';
+                previewText.style.fontSize = '2.25rem';
+            } else {
+                nagoriBtn.classList.remove('active', 'bg-white', 'text-black');
+                setpostgoBtn.classList.add('active', 'bg-white', 'text-black');
+                
+                preview.style.background = 'linear-gradient(145deg, #0a0a0a, #111111)';
+                previewText.classList.remove('nagori-text');
+                previewText.classList.add('setpostgo-text');
+                watermarkText.textContent = 'SETPOSTGO.XYZ';
+                previewText.style.fontSize = '2.1rem';
+            }
+        }
+
+        // Brand button listeners
+        nagoriBtn.addEventListener('click', () => switchBrand('nagori'));
+        setpostgoBtn.addEventListener('click', () => switchBrand('setpostgo'));
+
+        // Live text update
         textInput.addEventListener('input', () => {
             const text = textInput.value.trim();
-            if (text === '') {
-                previewText.textContent = 'Your message appears here';
-            } else {
-                previewText.textContent = text;
-            }
+            previewText.textContent = text === '' ? 'Your message appears here' : text;
         });
 
         // Download functionality
@@ -123,14 +170,14 @@
             html2canvas(preview, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: '#1a1a1a'
+                backgroundColor: currentBrand === 'nagori' ? '#121212' : '#0a0a0a'
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `nagori-${new Date().toISOString().slice(0,10)}.png`;
+                const brandPrefix = currentBrand === 'nagori' ? 'nagori' : 'setpostgo';
+                link.download = `${brandPrefix}-${new Date().toISOString().slice(0,10)}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
-                // Reset button
                 setTimeout(() => {
                     downloadBtn.innerHTML = `
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +186,7 @@
                         DOWNLOAD IMAGE
                     `;
                     downloadBtn.disabled = false;
-                }, 800);
+                }, 700);
             }).catch(err => {
                 console.error(err);
                 alert("Failed to generate image. Please try again.");
@@ -153,11 +200,12 @@
             });
         });
 
-        // Initial text
-        setTimeout(() => {
+        // Initialize with sample text
+        window.onload = () => {
             textInput.value = "The quiet pursuit of excellence";
             previewText.textContent = "The quiet pursuit of excellence";
-        }, 600);
+            switchBrand('nagori');
+        };
     </script>
 </body>
 </html>
