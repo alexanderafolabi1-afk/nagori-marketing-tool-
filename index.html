@@ -25,7 +25,7 @@
         
         .square-preview {
             box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
@@ -58,14 +58,21 @@
                     </div>
                 </div>
 
-                <!-- Generate Button -->
-                <div class="mb-4">
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-3 mb-8">
                     <button id="generateBtn"
-                            class="w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500 transition-all py-4 rounded-2xl text-sm tracking-widest flex items-center justify-center gap-2">
+                            class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500 transition-all py-4 rounded-2xl text-sm tracking-widest flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894L18 21H6l-2.236-8.106A2 2 0 015.236 10H10" />
                         </svg>
-                        GENERATE HIGH-CONVERSION TEXT
+                        GENERATE TEXT
+                    </button>
+                    <button id="randomizeBtn"
+                            class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500 transition-all py-4 rounded-2xl text-sm tracking-widest flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.058 11H1M12 3v2m0 16v2m9-9H15m-6 0H3" />
+                        </svg>
+                        RANDOMIZE STYLE
                     </button>
                 </div>
 
@@ -102,7 +109,7 @@
                     <!-- Content -->
                     <div class="text-center px-12 max-w-[85%]">
                         <div id="previewText" 
-                             class="nagori-text text-4xl leading-tight text-white tracking-[-1px]">
+                             class="nagori-text text-4xl leading-tight tracking-[-1px]">
                             The quiet pursuit of excellence
                         </div>
                     </div>
@@ -117,7 +124,7 @@
                     </div>
 
                     <!-- Subtle border accent -->
-                    <div class="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none"></div>
+                    <div id="accentBorder" class="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none"></div>
                 </div>
             </div>
         </div>
@@ -128,43 +135,68 @@
         const previewText = document.getElementById('previewText');
         const preview = document.getElementById('preview');
         const watermarkText = document.getElementById('watermarkText');
+        const accentBorder = document.getElementById('accentBorder');
         const downloadBtn = document.getElementById('downloadBtn');
         const nagoriBtn = document.getElementById('nagoriBtn');
         const setpostgoBtn = document.getElementById('setpostgoBtn');
         const generateBtn = document.getElementById('generateBtn');
+        const randomizeBtn = document.getElementById('randomizeBtn');
 
         let currentBrand = 'nagori';
+        let currentThemeIndex = 0;
 
-        // Nagori Philosophical Texts
-        const nagoriTexts = [
-            "Digital noise fades. True legacy requires a permanent archive.",
-            "What is written on water disappears. What is archived stays forever.",
-            "In the age of fleeting attention, permanence is the ultimate luxury.",
-            "Time erases the ordinary. Only the carefully preserved endures.",
-            "Build not for the moment, but for the centuries that follow.",
-            "Your story deserves more than temporary pixels.",
-            "Legacy is not left by chance — it is deliberately preserved."
+        // Nagori Themes
+        const nagoriThemes = [
+            { bg: '#121212', textColor: '#F5F5F4', watermarkColor: '#9CA3AF', accent: 'rgba(255,255,255,0.1)' },     // A: Warm charcoal + cream
+            { bg: '#1C0F13', textColor: '#D4AF88', watermarkColor: '#9CA3AF', accent: 'rgba(212,175,136,0.2)' },   // B: Burgundy + gold
+            { bg: '#0F1713', textColor: '#F8FAFC', watermarkColor: '#9CA3AF', accent: 'rgba(255,255,255,0.1)' },   // C: Forest green + white
+            { bg: '#F4F1EA', textColor: '#1F2527', watermarkColor: '#6B7280', accent: 'rgba(31,37,39,0.1)' }       // D: Cream + charcoal
         ];
 
-        // Setpostgo Growth Texts
-        const setpostgoTexts = [
-            "The 3-second hook rule: If you don't stop the scroll immediately, your content doesn't exist.",
-            "Stop posting manually. The top 1% of creators automate their distribution channels.",
-            "Post once. Reach everywhere. This is how the new elite build empires.",
-            "Your content is worthless if no one sees it. Distribution is the real game.",
-            "Consistency beats talent when systems do the heavy lifting.",
-            "Automate the boring. Dominate the feed.",
-            "Most creators post. Winners engineer visibility."
+        // Setpostgo Themes
+        const setpostgoThemes = [
+            { bg: '#000000', textColor: '#00F0FF', watermarkColor: '#6B7280', accent: 'rgba(0,240,255,0.3)' },     // A: Black + electric blue
+            { bg: '#000000', textColor: '#39FF14', watermarkColor: '#6B7280', accent: '#39FF14' },                 // B: Black + neon green border
+            { bg: 'linear-gradient(145deg, #2A1B4D, #1A1A2E)', textColor: '#E0BBFF', watermarkColor: '#9CA3AF', accent: 'rgba(224,187,255,0.2)' }, // C: Violet gradient
+            { bg: '#FFFFFF', textColor: '#111111', watermarkColor: '#6B7280', accent: 'rgba(0,0,0,0.15)' }         // D: White + heavy black
         ];
+
+        function applyTheme(brand, themeIndex) {
+            const themes = brand === 'nagori' ? nagoriThemes : setpostgoThemes;
+            const theme = themes[themeIndex % themes.length];
+
+            // Background
+            if (theme.bg.startsWith('linear')) {
+                preview.style.background = theme.bg;
+            } else {
+                preview.style.backgroundColor = theme.bg;
+            }
+
+            // Text
+            previewText.style.color = theme.textColor;
+
+            // Watermark
+            document.getElementById('watermark').style.color = theme.watermarkColor;
+
+            // Accent border
+            accentBorder.style.borderColor = theme.accent;
+
+            // Special handling for light backgrounds
+            if (brand === 'nagori' && themeIndex === 3) {
+                previewText.classList.add('!text-[#1F2527]');
+            } else if (brand === 'setpostgo' && themeIndex === 3) {
+                previewText.classList.add('!text-[#111111]');
+            }
+        }
 
         function switchBrand(brand) {
             currentBrand = brand;
+            currentThemeIndex = 0;
             
             if (brand === 'nagori') {
                 nagoriBtn.classList.add('active', 'bg-white', 'text-black');
                 setpostgoBtn.classList.remove('active', 'bg-white', 'text-black');
                 
-                preview.style.backgroundColor = '#121212';
                 previewText.classList.remove('setpostgo-text');
                 previewText.classList.add('nagori-text');
                 watermarkText.textContent = 'NAGORI';
@@ -173,13 +205,39 @@
                 nagoriBtn.classList.remove('active', 'bg-white', 'text-black');
                 setpostgoBtn.classList.add('active', 'bg-white', 'text-black');
                 
-                preview.style.background = 'linear-gradient(145deg, #0a0a0a, #111111)';
                 previewText.classList.remove('nagori-text');
                 previewText.classList.add('setpostgo-text');
                 watermarkText.textContent = 'SETPOSTGO.XYZ';
                 previewText.style.fontSize = '2.1rem';
             }
+            
+            applyTheme(brand, currentThemeIndex);
         }
+
+        function randomizeStyle() {
+            currentThemeIndex++;
+            applyTheme(currentBrand, currentThemeIndex);
+        }
+
+        // Nagori Texts
+        const nagoriTexts = [
+            "Digital noise fades. True legacy requires a permanent archive.",
+            "What is written on water disappears. What is archived stays forever.",
+            "In the age of fleeting attention, permanence is the ultimate luxury.",
+            "Time erases the ordinary. Only the carefully preserved endures.",
+            "Build not for the moment, but for the centuries that follow.",
+            "Your story deserves more than temporary pixels."
+        ];
+
+        // Setpostgo Texts
+        const setpostgoTexts = [
+            "The 3-second hook rule: If you don't stop the scroll immediately, your content doesn't exist.",
+            "Stop posting manually. The top 1% of creators automate their distribution channels.",
+            "Post once. Reach everywhere. This is how the new elite build empires.",
+            "Your content is worthless if no one sees it. Distribution is the real game.",
+            "Consistency beats talent when systems do the heavy lifting.",
+            "Automate the boring. Dominate the feed."
+        ];
 
         function generateText() {
             let texts = currentBrand === 'nagori' ? nagoriTexts : setpostgoTexts;
@@ -190,12 +248,11 @@
             previewText.textContent = selectedText;
         }
 
-        // Brand button listeners
+        // Event Listeners
         nagoriBtn.addEventListener('click', () => switchBrand('nagori'));
         setpostgoBtn.addEventListener('click', () => switchBrand('setpostgo'));
-
-        // Generate button
         generateBtn.addEventListener('click', generateText);
+        randomizeBtn.addEventListener('click', randomizeStyle);
 
         // Live text update
         textInput.addEventListener('input', () => {
@@ -216,11 +273,11 @@
             html2canvas(preview, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: currentBrand === 'nagori' ? '#121212' : '#0a0a0a'
+                backgroundColor: "transparent"
             }).then(canvas => {
                 const link = document.createElement('a');
                 const brandPrefix = currentBrand === 'nagori' ? 'nagori' : 'setpostgo';
-                link.download = `${brandPrefix}-${new Date().toISOString().slice(0,10)}.png`;
+                link.download = `${brandPrefix}-style${currentThemeIndex + 1}-${new Date().toISOString().slice(0,10)}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
@@ -232,7 +289,7 @@
                         DOWNLOAD IMAGE
                     `;
                     downloadBtn.disabled = false;
-                }, 700);
+                }, 800);
             }).catch(err => {
                 console.error(err);
                 alert("Failed to generate image. Please try again.");
